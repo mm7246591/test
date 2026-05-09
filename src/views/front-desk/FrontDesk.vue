@@ -79,7 +79,7 @@ watchEffect(() => {
 							class="relative w-[900px] h-[550px] rounded-[8px] overflow-hidden bg-[var(--color-canvas-bg)] [background-image:linear-gradient(var(--color-canvas-grid)_1px,transparent_1px),linear-gradient(90deg,var(--color-canvas-grid)_1px,transparent_1px)] [background-size:25px_25px] shadow-[inset_0_0_0_1px_var(--color-border)] transition-colors duration-300"
 							@click.self="selectedItem = null">
 							<div v-for="item of placedItems" :key="item.id" class="absolute overflow-hidden rounded-lg cursor-pointer"
-								:style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px', zIndex: item.zIndex }"
+								:style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px' }"
 								@click="selectItem(item)">
 								<img :src="item.src" class="w-full h-full object-cover" />
 							</div>
