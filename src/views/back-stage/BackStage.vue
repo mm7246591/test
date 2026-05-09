@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
-import CreateDialog from '../../components/backstage/CreateDialog.vue'
+import { onBeforeUnmount, onMounted } from 'vue'
 import { useStageItems } from './composables/useStageItems'
 import { useImageDialog } from './composables/useImageDialog'
 import { useDragDrop } from './composables/useDragDrop'
 import { useMoveItem } from './composables/useMoveItem'
+import CreateDialog from '../../components/backstage/CreateDialog.vue'
 
 const {
   canvasRef,
@@ -31,6 +31,16 @@ const { isOutsideStage, isOverlapping, handleMoveImage, handleStartMove, handleS
   placedItems,
   selectedId,
 })
+
+const handleSaveImageInfo = () => {
+  alert('儲存成功！')
+  localStorage.setItem('image-items', JSON.stringify(placedItems.value))
+}
+
+onMounted(() => {
+  const saved = localStorage.getItem("image-items");
+  if (saved) placedItems.value = JSON.parse(saved);
+});
 
 onBeforeUnmount(() => {
   window.removeEventListener('pointermove', handleMoveImage)
@@ -78,7 +88,8 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </div>
-        <button class="w-full bg-[#265ec7] text-white py-2.5 rounded-[4px] cursor-pointer">儲存</button>
+        <button class="w-full bg-[#265ec7] text-white py-2.5 rounded-[4px] cursor-pointer"
+          @click="handleSaveImageInfo">儲存</button>
       </aside>
     </div>
 
