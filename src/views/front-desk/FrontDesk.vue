@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
+import { useTheme } from '../../composables/useTheme'
 import type { PlacedItem } from '../back-stage/type/interface'
+
+const { isDark, toggleTheme } = useTheme()
 
 const placedItems = ref<PlacedItem[]>([])
 const selectedItem = ref<PlacedItem | null>(null)
@@ -10,25 +13,46 @@ const selectItem = (item: PlacedItem) => {
 }
 
 onMounted(() => {
+	const savedTheme = localStorage.getItem('theme')
+	if (savedTheme) isDark.value = savedTheme === 'dark'
+
 	const saved = localStorage.getItem('image-items')
 	if (saved) placedItems.value = JSON.parse(saved)
 })
+
+watchEffect(() => {
+	if (isDark.value) {
+		document.documentElement.setAttribute('data-theme', 'dark');
+		localStorage.setItem('theme', 'dark');
+	} else {
+		document.documentElement.setAttribute('data-theme', 'light');
+		localStorage.setItem('theme', 'light');
+	}
+});
 </script>
 
 <template>
-	<div class="h-screen flex flex-col">
-		<header class="w-full flex items-center p-[12px]">
+	<div
+		class="h-screen flex flex-col bg-[var(--color-bg-page)] text-[var(--color-text-primary)] transition-colors duration-300">
+		<header
+			class="w-full flex items-center p-[12px] bg-[var(--color-bg-header)] border-b border-[var(--color-border)] transition-colors duration-300">
 			<div class="flex-1 flex items-center justify-end gap-[12px]">
-				<div class="flex rounded overflow-hidden border border-gray-300 text-sm">
-					<button class="px-[20px] py-[6px] bg-black text-white font-medium">中文</button>
-					<button class="px-[20px] py-[6px] bg-white">英文</button>
+				<div class="flex rounded overflow-hidden border border-[var(--color-border)] text-sm">
+					<button
+						class="px-[20px] py-[6px] font-medium bg-[var(--color-lang-active-bg)] text-[var(--color-lang-active-text)] transition-colors duration-300">中文</button>
+					<button
+						class="px-[20px] py-[6px] bg-[var(--color-lang-inactive-bg)] text-[var(--color-lang-inactive-text)] transition-colors duration-300">英文</button>
 				</div>
 				<div class="flex items-center gap-[12px]">
 					<span class="text-sm">深色模式</span>
 					<div
-						class="flex items-center justify-between w-[72px] h-8 bg-gray-900 rounded-full px-1.5 cursor-pointer select-none">
-						<span class="text-white text-xs font-bold ml-1">OFF</span>
-						<div class="w-5 h-5 bg-white rounded-full shadow-md" />
+						class="relative flex items-center w-[72px] h-8 rounded-full px-1.5 cursor-pointer select-none transition-colors duration-300"
+						:class="isDark ? 'bg-gray-900' : 'bg-gray-300'" @click="toggleTheme">
+						<span class="text-xs font-bold transition-all duration-300 absolute"
+							:class="isDark ? 'text-white left-2.5' : 'text-gray-600 right-2.5'">
+						</span>
+						<div class="w-5 h-5 bg-white rounded-full shadow-md absolute transition-all duration-300"
+							:class="isDark ? 'left-[46px]' : 'left-1.5'" />
 					</div>
 				</div>
 			</div>
@@ -37,10 +61,11 @@ onMounted(() => {
 		<div class="flex-1 flex justify-center items-center">
 			<div class="max-w-[1280px] max-h-[720px] flex gap-[16px]">
 
-				<main class="flex flex-col flex-1 rounded-[8px] p-[20px] shadow-[0_10px_30px_rgba(15,23,42,0.1)] bg-white">
+				<main
+					class="flex flex-col flex-1 rounded-[8px] p-[20px] bg-[var(--color-bg-panel)] shadow-[0_10px_30px_var(--color-shadow)] transition-colors duration-300">
 					<div class="flex-1 min-h-0 grid place-items-center overflow-hidden">
 						<div
-							class="relative w-[900px] h-[550px] bg-white rounded-[8px] overflow-hidden [background-image:linear-gradient(#e5e7eb_1px,transparent_1px),linear-gradient(90deg,#e5e7eb_1px,transparent_1px)] [background-size:25px_25px] shadow-[inset_0_0_0_1px_#cbd5e1]"
+							class="relative w-[900px] h-[550px] rounded-[8px] overflow-hidden bg-[var(--color-canvas-bg)] [background-image:linear-gradient(var(--color-canvas-grid)_1px,transparent_1px),linear-gradient(90deg,var(--color-canvas-grid)_1px,transparent_1px)] [background-size:25px_25px] shadow-[inset_0_0_0_1px_var(--color-border)] transition-colors duration-300"
 							@click.self="selectedItem = null">
 							<div v-for="item of placedItems" :key="item.id" class="absolute overflow-hidden rounded-lg cursor-pointer"
 								:style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px', zIndex: item.zIndex }"
@@ -51,13 +76,14 @@ onMounted(() => {
 					</div>
 				</main>
 
-				<aside class="w-[350px] flex flex-col rounded-[8px] p-[20px] shadow-[0_10px_30px_rgba(15,23,42,0.1)] bg-white">
+				<aside
+					class="w-[350px] flex flex-col rounded-[8px] p-[20px] bg-[var(--color-bg-panel)] shadow-[0_10px_30px_var(--color-shadow)] transition-colors duration-300">
 					<div v-if="selectedItem">
 						<img :src="selectedItem.src"
-							class="w-full rounded-[8px] object-cover shadow-[0_4px_12px_rgba(15,23,42,0.15)]" />
+							class="w-full rounded-[8px] object-cover shadow-[0_4px_12px_var(--color-img-shadow)]" />
 						<div class="mt-[20px] flex flex-col gap-[12px]">
-							<p class="text-base">名稱：{{ selectedItem.name }}</p>
-							<p class="text-base">描述：{{ selectedItem.description }}</p>
+							<p class="text-base text-[var(--color-text-primary)]">名稱：{{ selectedItem.name }}</p>
+							<p class="text-base text-[var(--color-text-secondary)]">描述：{{ selectedItem.description }}</p>
 						</div>
 					</div>
 				</aside>
@@ -66,5 +92,3 @@ onMounted(() => {
 		</div>
 	</div>
 </template>
-
-<style lang="css" scoped></style>
