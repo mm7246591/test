@@ -8,6 +8,11 @@ const router = createRouter({
       name: "BackStage",
       component: () => import("@/views/back-stage/BackStage.vue"),
     },
+    {
+      path: "/front-desk",
+      name: "FrontDesk",
+      component: () => import("@/views/front-desk/FrontDesk.vue"),
+    },
   ],
 });
 
