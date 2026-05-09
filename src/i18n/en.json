@@ -1,0 +1,14 @@
+{
+  "toggle": {
+    "cn": "Chinese",
+    "en": "English"
+  },
+  "mode": {
+    "dark": "dark mode",
+    "light": "light mode"
+  },
+  "info": {
+    "name": "name",
+    "description": "description"
+  }
+}

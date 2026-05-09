@@ -1,0 +1,14 @@
+{
+  "toggle": {
+    "cn": "中文",
+    "en": "英文"
+  },
+  "mode": {
+    "dark": "深色模式",
+    "light": "淺色模式"
+  },
+  "info": {
+    "name": "名稱",
+    "description": "描述"
+  }
+}
