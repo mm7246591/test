@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { onBeforeUnmount } from 'vue'
 import CreateDialog from '../../components/backstage/CreateDialog.vue'
 import { useStageItems } from './composables/useStageItems'
 import { useImageDialog } from './composables/useImageDialog'
 import { useDragDrop } from './composables/useDragDrop'
+import { useMoveItem } from './composables/useMoveItem'
 
 const {
   canvasRef,
@@ -23,6 +25,17 @@ const { isDragOver, sourceImages, handleDragImage, handleDropImage } = useDragDr
   handleOpenDialog,
 })
 
+const { isOutsideStage, handleMoveImage, handleStartMove, handleStopMove } = useMoveItem({
+  canvasRef,
+  handlePosition,
+  placedItems,
+  selectedId,
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('pointermove', handleMoveImage)
+  window.removeEventListener('pointerup', handleStopMove)
+})
 </script>
 
 <template>
@@ -31,16 +44,22 @@ const { isDragOver, sourceImages, handleDragImage, handleDropImage } = useDragDr
       <main class="flex flex-col flex-1 rounded-[8px] p-[20px] shadow-[0_10px_30px_rgba(15,23,42,0.1)] bg-white">
         <div class="flex-1 min-h-0 grid place-items-center overflow-hidden">
           <div ref="canvasRef"
-            :class="isDragOver ? 'outline outline-[2px] outline-[#9ecaff] -outline-offset-[2px]' : ''"
+            :class="isDragOver ? 'outline outline-[2px] outline-[#9ecaff] -outline-offset-[2px]' : isOutsideStage ? 'outline outline-[2px] outline-[#fc8d8d] -outline-offset-[2px]' : ''"
             class="relative w-[900px] h-[550px] max-w-full max-h-full bg-white rounded-[8px] overflow-hidden [background-image:linear-gradient(#e5e7eb_1px,transparent_1px),linear-gradient(90deg,#e5e7eb_1px,transparent_1px)] [background-size:25px_25px] shadow-[inset_0_0_0_1px_#cbd5e1]"
             @dragover.prevent="isDragOver = true" @dragleave="isDragOver = false"
             @drop.prevent="handleDropImage($event)" @pointerdown.self="selectedId = null">
+            <transition name="fade">
+              <div v-if="isOutsideStage"
+                class="absolute inset-0 z-[99999] bg-red-500/10 flex items-center justify-center pointer-events-none">
+                <span class="bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">移除物件</span>
+              </div>
+            </transition>
             <div v-for="item of placedItems" :key="item.id" class="absolute overflow-hidden rounded-lg"
               :style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px', zIndex: item.zIndex }">
               <img :src="item.src"
                 :class="selectedId === item.id ? 'outline-dashed outline-2 outline-[#2563eb] outline-offset-[5px]' : ''"
-                class="block w-full h-full object-cover select-none shadow-[0_8px_18px_rgba(15,23,42,0.2)]"
-                draggable="false" />
+                class="w-full h-full object-cover select-none cursor-grab active:cursor-grabbing shadow-[0_8px_18px_rgba(15,23,42,0.2)]"
+                draggable="false" @pointerdown.stop="handleStartMove($event, item)" />
             </div>
           </div>
         </div>
@@ -65,3 +84,15 @@ const { isDragOver, sourceImages, handleDragImage, handleDropImage } = useDragDr
       @cancel="handleCancelImage" />
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
