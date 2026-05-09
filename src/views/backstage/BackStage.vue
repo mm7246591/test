@@ -1,18 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import CreateDialog from '../../components/backstage/CreateDialog.vue'
+import { useStageItems } from './composables/useStageItems'
+import { useImageDialog } from './composables/useImageDialog'
+import { useDragDrop } from './composables/useDragDrop'
 
-const sourceImages = ref([
-  { id: '1', src: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&h=500&q=80' },
-  { id: '2', src: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=500&h=500&q=80' },
-  { id: '3', src: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=500&h=500&q=80' },
-  { id: '4', src: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=500&h=500&q=80' },
-])
+const {
+  canvasRef,
+  placedItems,
+  selectedId,
+  handlePosition,
+  loadImageSize,
+} = useStageItems()
 
-const isOpenDialog = ref(false)
-const imageForm = ref({ name: '', description: '' })
+const { isOpenDialog, imageForm, handleOpenDialog, handleSaveImage, handleCancelImage } =
+  useImageDialog(placedItems, selectedId)
 
-const handleSave = (): void => { }
+const { isDragOver, sourceImages, handleDragImage, handleDropImage } = useDragDrop({
+  handlePosition,
+  loadImageSize,
+  placedItems,
+  selectedId,
+  handleOpenDialog,
+})
+
 </script>
 
 <template>
@@ -20,8 +30,18 @@ const handleSave = (): void => { }
     <div class="max-w-[1280px] max-h-[720px] flex justify-center mx-auto p-[20px] gap-[16px]">
       <main class="flex flex-col flex-1 rounded-[8px] p-[20px] shadow-[0_10px_30px_rgba(15,23,42,0.1)] bg-white">
         <div class="flex-1 min-h-0 grid place-items-center overflow-hidden">
-          <div
-            class="relative w-[900px] h-[550px] max-w-full max-h-full bg-white rounded-[8px] overflow-hidden [background-image:linear-gradient(#e5e7eb_1px,transparent_1px),linear-gradient(90deg,#e5e7eb_1px,transparent_1px)] [background-size:25px_25px] shadow-[inset_0_0_0_1px_#cbd5e1]">
+          <div ref="canvasRef"
+            :class="isDragOver ? 'outline outline-[2px] outline-[#9ecaff] -outline-offset-[2px]' : ''"
+            class="relative w-[900px] h-[550px] max-w-full max-h-full bg-white rounded-[8px] overflow-hidden [background-image:linear-gradient(#e5e7eb_1px,transparent_1px),linear-gradient(90deg,#e5e7eb_1px,transparent_1px)] [background-size:25px_25px] shadow-[inset_0_0_0_1px_#cbd5e1]"
+            @dragover.prevent="isDragOver = true" @dragleave="isDragOver = false"
+            @drop.prevent="handleDropImage($event)" @pointerdown.self="selectedId = null">
+            <div v-for="item of placedItems" :key="item.id" class="absolute overflow-hidden rounded-lg"
+              :style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px', zIndex: item.zIndex }">
+              <img :src="item.src"
+                :class="selectedId === item.id ? 'outline-dashed outline-2 outline-[#2563eb] outline-offset-[5px]' : ''"
+                class="block w-full h-full object-cover select-none shadow-[0_8px_18px_rgba(15,23,42,0.2)]"
+                draggable="false" />
+            </div>
           </div>
         </div>
       </main>
@@ -32,16 +52,16 @@ const handleSave = (): void => { }
           <div class="grid grid-cols-2 gap-3 overflow-y-auto">
             <div v-for="image of sourceImages" :key="image.id">
               <img :src="image.src"
-                class="transition-[transform,box-shadow] duration-200 ease-out hover:translate-y-[-2px] rounded-[8px]" />
+                class="transition-[transform,box-shadow] duration-200 ease-out hover:translate-y-[-2px] cursor-grab rounded-[8px]"
+                draggable="true" @dragstart="handleDragImage($event, image)" />
             </div>
           </div>
         </div>
-        <button class="w-full bg-[#265ec7] text-white py-2.5 rounded-[4px] cursor-pointer"
-          @click="handleSave">儲存</button>
+        <button class="w-full bg-[#265ec7] text-white py-2.5 rounded-[4px] cursor-pointer">儲存</button>
       </aside>
     </div>
 
-    <CreateDialog :is-open-dialog="isOpenDialog" :imageForm="imageForm" @save="handleSave"
-      @cancel="() => isOpenDialog = false" />
+    <CreateDialog :is-open-dialog="isOpenDialog" :imageForm="imageForm" @save="handleSaveImage"
+      @cancel="handleCancelImage" />
   </div>
 </template>
