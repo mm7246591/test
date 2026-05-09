@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { ref, onMounted, watchEffect } from 'vue'
 import { useTheme } from '../../composables/useTheme'
+import { useI18n } from 'vue-i18n';
 import type { PlacedItem } from '../back-stage/type/interface'
 
 const { isDark, toggleTheme } = useTheme()
+const { t, locale } = useI18n();
 
 const placedItems = ref<PlacedItem[]>([])
 const selectedItem = ref<PlacedItem | null>(null)
 
 const selectItem = (item: PlacedItem) => {
 	selectedItem.value = item
+}
+
+const handleSwitchLanguage = (lang: string) => {
+	locale.value = lang;
+	localStorage.setItem('locale', lang);
 }
 
 onMounted(() => {
@@ -38,13 +45,17 @@ watchEffect(() => {
 			class="w-full flex items-center p-[12px] bg-[var(--color-bg-header)] border-b border-[var(--color-border)] transition-colors duration-300">
 			<div class="flex-1 flex items-center justify-end gap-[12px]">
 				<div class="flex rounded overflow-hidden border border-[var(--color-border)] text-sm">
-					<button
-						class="px-[20px] py-[6px] font-medium bg-[var(--color-lang-active-bg)] text-[var(--color-lang-active-text)] transition-colors duration-300">中文</button>
-					<button
-						class="px-[20px] py-[6px] bg-[var(--color-lang-inactive-bg)] text-[var(--color-lang-inactive-text)] transition-colors duration-300">英文</button>
+					<button class="w-[120px] py-[6px] font-medium" :class="locale === 'ch'
+						? 'bg-[var(--color-lang-active-bg)] text-[var(--color-lang-active-text)]'
+						: 'bg-[var(--color-lang-inactive-bg)] text-[var(--color-lang-inactive-text)]'"
+						@click="handleSwitchLanguage('ch')">{{ t("toggle.cn") }}</button>
+					<button class="w-[120px] py-[6px]" :class="locale === 'en'
+						? 'bg-[var(--color-lang-active-bg)] text-[var(--color-lang-active-text)]'
+						: 'bg-[var(--color-lang-inactive-bg)] text-[var(--color-lang-inactive-text)]'"
+						@click="handleSwitchLanguage('en')">{{ t("toggle.en") }}</button>
 				</div>
 				<div class="flex items-center gap-[12px]">
-					<span class="text-sm">深色模式</span>
+					<span class="text-sm">{{ t(`mode.${isDark ? 'dark' : 'light'}`) }}</span>
 					<div
 						class="relative flex items-center w-[72px] h-8 rounded-full px-1.5 cursor-pointer select-none transition-colors duration-300"
 						:class="isDark ? 'bg-gray-900' : 'bg-gray-300'" @click="toggleTheme">
@@ -82,8 +93,9 @@ watchEffect(() => {
 						<img :src="selectedItem.src"
 							class="w-full rounded-[8px] object-cover shadow-[0_4px_12px_var(--color-img-shadow)]" />
 						<div class="mt-[20px] flex flex-col gap-[12px]">
-							<p class="text-base text-[var(--color-text-primary)]">名稱：{{ selectedItem.name }}</p>
-							<p class="text-base text-[var(--color-text-secondary)]">描述：{{ selectedItem.description }}</p>
+							<p class="text-base text-[var(--color-text-primary)]">{{ t("info.name") }}: {{ selectedItem.name }}</p>
+							<p class="text-base text-[var(--color-text-primary)]">{{ t("info.description") }}: {{
+								selectedItem.description }}</p>
 						</div>
 					</div>
 				</aside>
