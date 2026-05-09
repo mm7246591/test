@@ -1,6 +1,12 @@
 import { ref } from "vue";
+import { hasOverlap } from "../utils/collision";
 import type { Ref } from "vue";
-import type { Position, Size, PlacedItem, SourceImage } from "../type/interface";
+import type {
+  Position,
+  Size,
+  PlacedItem,
+  SourceImage,
+} from "../type/interface";
 
 interface UseDragDropOptions {
   handlePosition: (event: PointerEvent | DragEvent) => Position;
@@ -74,6 +80,8 @@ export const useDragDrop = ({
       name: "",
       description: "",
     };
+    if (hasOverlap(item, placedItems.value)) return;
+
     placedItems.value.push(item);
     selectedId.value = item.id;
 
