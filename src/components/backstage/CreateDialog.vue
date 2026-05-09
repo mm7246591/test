@@ -3,12 +3,14 @@ import { ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
 	isOpenDialog: boolean
+	isEditing: boolean
 	imageForm: {
 		name: string
 		description: string
 	}
 }>(), {
 	isOpenDialog: false,
+	isEditing: false,
 	imageForm: () => ({ name: '', description: '' }),
 })
 
@@ -44,7 +46,7 @@ watch(() => props.isOpenDialog, (val) => {
 		@pointerdown.self="handleCancelImage">
 		<section class="w-[400px] p-[20px] bg-white rounded-[8px] ">
 
-			<h2 class="mb-[12px] text-center text-xl font-semibold">新增物件資訊</h2>
+			<h2 class="mb-[12px] text-center text-xl font-semibold">{{ isEditing ? '編輯物件資訊' : '新增物件資訊' }}</h2>
 			<div class="flex flex-col mb-[12px]">
 				<div class="flex items-center gap-[12px]">
 					<label for="imageName" class="text-sm font-semibold shrink-0">名稱</label>

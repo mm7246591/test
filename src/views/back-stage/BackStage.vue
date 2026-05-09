@@ -14,7 +14,7 @@ const {
   loadImageSize,
 } = useStageItems()
 
-const { isOpenDialog, imageForm, handleOpenDialog, handleSaveImage, handleCancelImage } =
+const { isOpenDialog, isEditing, imageForm, handleOpenDialog, handleEditDialog, handleSaveImage, handleCancelImage } =
   useImageDialog(placedItems, selectedId)
 
 const { isDragOver, sourceImages, handleDragImage, handleDropImage } = useDragDrop({
@@ -67,11 +67,12 @@ onBeforeUnmount(() => {
               </div>
             </transition>
             <div v-for="item of placedItems" :key="item.id" class="absolute overflow-hidden rounded-lg"
-              :style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px', zIndex: item.zIndex }">
+              :style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px' }">
               <img :src="item.src"
                 :class="selectedId === item.id ? 'outline-dashed outline-2 outline-[#2563eb] outline-offset-[5px]' : ''"
                 class="w-full h-full object-cover select-none cursor-grab active:cursor-grabbing shadow-[0_8px_18px_rgba(15,23,42,0.2)]"
-                draggable="false" @pointerdown.stop="handleStartMove($event, item)" />
+                draggable="false" @pointerdown.stop="handleStartMove($event, item)"
+                @dblclick.stop="handleEditDialog(item)" />
             </div>
           </div>
         </div>
@@ -93,7 +94,7 @@ onBeforeUnmount(() => {
       </aside>
     </div>
 
-    <CreateDialog :is-open-dialog="isOpenDialog" :imageForm="imageForm" @save="handleSaveImage"
+    <CreateDialog :is-open-dialog="isOpenDialog" :is-editing="isEditing" :imageForm="imageForm" @save="handleSaveImage"
       @cancel="handleCancelImage" />
   </div>
 </template>
