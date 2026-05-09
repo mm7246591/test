@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: "/backstage",
       name: "backstage",
-      component: () => import("@/views/BackStage.vue"),
+      component: () => import("@/views/backstage/BackStage.vue"),
     },
   ],
 });
