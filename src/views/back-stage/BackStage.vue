@@ -79,8 +79,8 @@ onBeforeUnmount(() => {
               <div class="w-full h-full overflow-hidden rounded-[8px]">
                 <img :src="item.src"
                   class="w-full h-full object-cover select-none cursor-grab active:cursor-grabbing shadow-[0_8px_18px_rgba(15,23,42,0.2)]"
-                  draggable="false" @pointerdown.stop="handleStartMove($event, item)"
-                  @dblclick.stop="handleEditDialog(item)" />
+                  draggable="false" @pointerdown.stop.prevent="handleStartMove($event, item)"
+                  @dragstart.prevent @dblclick.stop="handleEditDialog(item)" />
               </div>
               <div v-if="selectedId === item.id">
                 <div @pointerdown.stop="handleStartResize(item, 'lt')"
