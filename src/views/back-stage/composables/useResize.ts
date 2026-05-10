@@ -4,12 +4,14 @@ import type { Ref } from "vue";
 import type { PlacedItem, Position } from "../type/interface";
 
 interface useResizeOptions {
+  canvasRef: Ref<HTMLDivElement | null>;
   handlePosition: (event: PointerEvent) => Position;
   placedItems: Ref<PlacedItem[]>;
   selectedId: Ref<string | null>;
 }
 
 export const useResize = ({
+  canvasRef,
   handlePosition,
   placedItems,
   selectedId,
@@ -25,12 +27,19 @@ export const useResize = ({
     aspectRatio: 1,
   });
 
-  const checkOverlap = (item: PlacedItem): boolean => {
+  const checkOverlap = (item: PlacedItem) => {
+    const canvas = canvasRef.value!.getBoundingClientRect();
+    const isOutOfBounds =
+      item.x < 0 ||
+      item.y < 0 ||
+      item.x + item.width > canvas.width ||
+      item.y + item.height > canvas.height;
     if (
       hasOverlap(
         item,
         placedItems.value.filter((i) => i.id !== item.id),
-      )
+      ) ||
+      isOutOfBounds
     ) {
       isResizing.value = false;
       isNotAllowed.value = true;
@@ -38,9 +47,7 @@ export const useResize = ({
       item.y = originItem.value.y;
       item.width = originItem.value.width;
       item.height = originItem.value.height;
-      return true;
     }
-    return false;
   };
 
   const handleResizing = (event: PointerEvent): void => {

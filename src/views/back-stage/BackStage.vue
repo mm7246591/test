@@ -34,6 +34,7 @@ const { isOutsideStage, isOverlapping, handleMoveImage, handleStartMove, handleS
 })
 
 const { handleStartResize, isNotAllowed } = useResize({
+  canvasRef,
   handlePosition,
   placedItems,
   selectedId,
@@ -69,7 +70,7 @@ onBeforeUnmount(() => {
               <div v-if="isOutsideStage || (isOverlapping || isNotAllowed)"
                 class="absolute inset-0 z-[99999] bg-red-500/10 flex items-center justify-center pointer-events-none">
                 <span class="bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
-                  {{ isOutsideStage ? '移除物件' : '物件重疊' }}
+                  {{ isOutsideStage ? '移除物件' : isOverlapping ? '物件重疊' : '尺寸限制' }}
                 </span>
               </div>
             </transition>
@@ -83,13 +84,13 @@ onBeforeUnmount(() => {
               </div>
               <div v-if="selectedId === item.id">
                 <div @pointerdown.stop="handleStartResize(item, 'lt')"
-                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nwse-resize -top-1 -left-1" />
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nwse-resize -top-2 -left-2" />
                 <div @pointerdown.stop="handleStartResize(item, 'rt')"
-                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nesw-resize -top-1 -right-1" />
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nesw-resize -top-2 -right-2" />
                 <div @pointerdown.stop="handleStartResize(item, 'lb')"
-                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nesw-resize -bottom-1 -left-1" />
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nesw-resize -bottom-2 -left-2" />
                 <div @pointerdown.stop="handleStartResize(item, 'rb')"
-                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nwse-resize -bottom-1 -right-1" />
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nwse-resize -bottom-2 -right-2" />
               </div>
             </div>
           </div>
