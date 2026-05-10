@@ -4,6 +4,7 @@ import { useStageItems } from './composables/useStageItems'
 import { useImageDialog } from './composables/useImageDialog'
 import { useDragDrop } from './composables/useDragDrop'
 import { useMoveItem } from './composables/useMoveItem'
+import { useResize } from './composables/useResize'
 import CreateDialog from '../../components/backstage/CreateDialog.vue'
 
 const {
@@ -32,6 +33,12 @@ const { isOutsideStage, isOverlapping, handleMoveImage, handleStartMove, handleS
   selectedId,
 })
 
+const { handleStartResize, isNotAllowed } = useResize({
+  handlePosition,
+  placedItems,
+  selectedId,
+})
+
 const handleSaveImageInfo = () => {
   alert('儲存成功！')
   localStorage.setItem('image-items', JSON.stringify(placedItems.value))
@@ -54,25 +61,36 @@ onBeforeUnmount(() => {
       <main class="flex flex-col flex-1 rounded-[8px] p-[20px] shadow-[0_10px_30px_rgba(15,23,42,0.1)] bg-white">
         <div class="flex-1 min-h-0 grid place-items-center overflow-hidden">
           <div ref="canvasRef"
-            :class="isDragOver ? 'outline outline-[2px] outline-[#9ecaff] -outline-offset-[2px]' : (isOutsideStage || isOverlapping) ? 'outline outline-[2px] outline-[#fc8d8d] -outline-offset-[2px]' : ''"
+            :class="isDragOver ? 'outline outline-[2px] outline-[#9ecaff] -outline-offset-[2px]' : (isOutsideStage || isOverlapping || isNotAllowed) ? 'outline outline-[2px] outline-[#fc8d8d] -outline-offset-[2px]' : ''"
             class="relative w-[900px] h-[550px] max-w-full max-h-full bg-white rounded-[8px] overflow-hidden [background-image:linear-gradient(#e5e7eb_1px,transparent_1px),linear-gradient(90deg,#e5e7eb_1px,transparent_1px)] [background-size:25px_25px] shadow-[inset_0_0_0_1px_#cbd5e1]"
             @dragover.prevent="isDragOver = true" @dragleave="isDragOver = false"
             @drop.prevent="handleDropImage($event)" @pointerdown.self="selectedId = null">
             <transition name="fade">
-              <div v-if="isOutsideStage || isOverlapping"
+              <div v-if="isOutsideStage || (isOverlapping || isNotAllowed)"
                 class="absolute inset-0 z-[99999] bg-red-500/10 flex items-center justify-center pointer-events-none">
                 <span class="bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg">
                   {{ isOutsideStage ? '移除物件' : '物件重疊' }}
                 </span>
               </div>
             </transition>
-            <div v-for="item of placedItems" :key="item.id" class="absolute overflow-hidden rounded-lg"
+            <div v-for="item of placedItems" :key="item.id" class="absolute"
               :style="{ left: item.x + 'px', top: item.y + 'px', width: item.width + 'px', height: item.height + 'px' }">
-              <img :src="item.src"
-                :class="selectedId === item.id ? 'outline-dashed outline-2 outline-[#2563eb] outline-offset-[5px]' : ''"
-                class="w-full h-full object-cover select-none cursor-grab active:cursor-grabbing shadow-[0_8px_18px_rgba(15,23,42,0.2)]"
-                draggable="false" @pointerdown.stop="handleStartMove($event, item)"
-                @dblclick.stop="handleEditDialog(item)" />
+              <div class="w-full h-full overflow-hidden rounded-[8px]">
+                <img :src="item.src"
+                  class="w-full h-full object-cover select-none cursor-grab active:cursor-grabbing shadow-[0_8px_18px_rgba(15,23,42,0.2)]"
+                  draggable="false" @pointerdown.stop="handleStartMove($event, item)"
+                  @dblclick.stop="handleEditDialog(item)" />
+              </div>
+              <div v-if="selectedId === item.id">
+                <div @pointerdown.stop="handleStartResize(item, 'lt')"
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nwse-resize -top-1 -left-1" />
+                <div @pointerdown.stop="handleStartResize(item, 'rt')"
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nesw-resize -top-1 -right-1" />
+                <div @pointerdown.stop="handleStartResize(item, 'lb')"
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nesw-resize -bottom-1 -left-1" />
+                <div @pointerdown.stop="handleStartResize(item, 'rb')"
+                  class="absolute w-[10px] h-[10px] bg-white border-2 border-[#2563eb] cursor-nwse-resize -bottom-1 -right-1" />
+              </div>
             </div>
           </div>
         </div>
