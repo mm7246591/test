@@ -3,7 +3,7 @@ import "@/assets/theme-color.css";
 import "@/assets/tailwind.css";
 import { createI18n } from "vue-i18n";
 import en from "@/i18n/en.json";
-import ch from "@/i18n/ch.json";
+import zh from "@/i18n/zh.json";
 import router from "@/router";
 import App from "./App.vue";
 
@@ -15,7 +15,7 @@ const i18n = createI18n({
   fallbackLocale: "en",
   messages: {
     en,
-    ch,
+    zh,
   },
 });
 
